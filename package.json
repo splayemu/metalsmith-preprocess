@@ -4,13 +4,13 @@
   "description": "Preprocesses serverside JS",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha -R spec",
+    "debug-test": "DEBUG=metalsmith-preprocess mocha -R spec"
   },
   "author": "Spencer Apple",
   "license": "MIT",
   "dependencies": {
     "debug": "^2.2.0",
-    "fs": "0.0.1-security",
     "jsdom": "^9.8.3",
     "require-from-string": "^1.2.1"
   },

@@ -18,7 +18,7 @@ module.exports = function (options) {
   });
 
   function preprocess (html_content, preprocess, files_in_directory, files) {
-    console.log('runPreprocess', html_content.directory);
+    debug('runPreprocess', html_content.directory);
     preprocess = requireFromString(preprocess.contents.toString());
 
     // split renders and asyncLoad
@@ -27,7 +27,7 @@ module.exports = function (options) {
                  Promise.resolve();
 
     return loaded.then(function (result) {
-      console.log('then', html_content.directory);
+      debug('then', html_content.directory);
       return new Promise(function (resolve, reject) {
         jsdom.env({
           features: { QuerySelector: true },
@@ -45,7 +45,7 @@ module.exports = function (options) {
               });
 
             html_content.contents = Buffer.from(window.document.documentElement.innerHTML, 'utf-8');
-            console.log('resolving', html_content.directory);
+            debug('resolving', html_content.directory);
             resolve();
           }
         });
@@ -57,7 +57,7 @@ module.exports = function (options) {
     var promises = [];
     var re_filename = /^(\S+)\/(\S+)$/;
 
-    console.log('metalsmith-preprocess', Object.keys(files).length);
+    debug('metalsmith-preprocess', Object.keys(files).length);
 
     // update or add directory and filename for each file
     Object.keys(files).forEach(function (file) {
@@ -100,14 +100,14 @@ module.exports = function (options) {
 
       if (!files_in_directory.has(preprocess_filename)) return;
 
-      console.log('expecting', preprocess_filename, "with", files_in_directory);
+      debug('expecting', preprocess_filename, "with", files_in_directory);
       promises.push(preprocess(content_file, files[preprocess_filename], files_in_directory, files));
     });
 
     // why doesn't then just accept done as an argument?
-    console.log('Checking promises:', promises);
+    debug('Checking promises:', promises);
     Promise.all(promises)
-      .then(function (result) { console.log('all files processed.'); done(); })
+      .then(function (result) { done(); })
       .catch(function (error) { done(error); });
   }
 }
