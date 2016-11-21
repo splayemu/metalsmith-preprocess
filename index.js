@@ -11,27 +11,27 @@ module.exports = function (options) {
   }
 
   options = options || {};
-  Object.keys(defaults).forEach(function (default_option) {
-    if (!options.hasOwnProperty(default_option)) return;
+  Object.keys(defaults).forEach(function (defaultOption) {
+    if (!options.hasOwnProperty(defaultOption)) return;
 
-    options[default_option] = defaults[default_option];
+    options[defaultOption] = defaults[defaultOption];
   });
 
-  function preprocess (html_content, preprocess, files_in_directory, files) {
-    debug('runPreprocess', html_content.directory);
+  function preprocess (htmlFile, preprocess, filesInDirectory, files) {
+    debug('runPreprocess', htmlFile.directory);
     preprocess = requireFromString(preprocess.contents.toString());
 
     // split renders and asyncLoad
     var loaded = preprocess.hasOwnProperty(defaults.asyncLoad) ?
-                 preprocess[defaults.asyncLoad](html_content, files_in_directory, files) :
+                 preprocess[defaults.asyncLoad](htmlFile, filesInDirectory, files) :
                  Promise.resolve();
 
     return loaded.then(function (result) {
-      debug('then', html_content.directory);
+      debug('then', htmlFile.directory);
       return new Promise(function (resolve, reject) {
         jsdom.env({
           features: { QuerySelector: true },
-          html: html_content.contents.toString(),
+          html: htmlFile.contents.toString(),
           done: function (errors, window) {
             if (errors)
               reject(errors);
@@ -44,8 +44,8 @@ module.exports = function (options) {
                 renderer.call(window, window.document.querySelector.bind(window.document));
               });
 
-            html_content.contents = Buffer.from(window.document.documentElement.innerHTML, 'utf-8');
-            debug('resolving', html_content.directory);
+            htmlFile.contents = Buffer.from(window.document.documentElement.innerHTML, 'utf-8');
+            debug('resolving', htmlFile.directory);
             resolve();
           }
         });
@@ -72,36 +72,36 @@ module.exports = function (options) {
       files[file].filename = match[2];
     });
 
-    var content_filenames = Object.keys(files)
+    var contentFilenames = Object.keys(files)
       // filter filepath list to content files only
       .filter(function (file) {
         return new Set(files[file].collection).has(defaults.collection);
       });
 
     // test for collection
-    if (defaults.collection !== null && content_filenames.length === 0) {
+    if (defaults.collection !== null && contentFilenames.length === 0) {
       done(Error("Collection, " +
                  defaults.collection +
                  ", is specified but does not match any files."));
     }
 
     // create a map of content filenames to other filenames in the same directory
-    var content_directories = new Map(
-      content_filenames.map(function (file) {
-        var files_in_directory =
+    var contentDirectories = new Map(
+      contentFilenames.map(function (file) {
+        var filesInDirectory =
           new Set(Object.keys(files).filter(function (f) { return file.directory === f.directory; }));
-        return [file, files_in_directory];
+        return [file, filesInDirectory];
       }));
 
     // run preprocess functions for preprocess files found in content directories
-    content_directories.forEach(function (files_in_directory, file) {
-      var content_file = files[file],
-          preprocess_filename = path.join(content_file.directory, defaults.filename);
+    contentDirectories.forEach(function (filesInDirectory, file) {
+      var contentFile = files[file],
+          preprocessFilename = path.join(contentFile.directory, defaults.filename);
 
-      if (!files_in_directory.has(preprocess_filename)) return;
+      if (!filesInDirectory.has(preprocessFilename)) return;
 
-      debug('expecting', preprocess_filename, "with", files_in_directory);
-      promises.push(preprocess(content_file, files[preprocess_filename], files_in_directory, files));
+      debug('expecting', preprocessFilename, "with", filesInDirectory);
+      promises.push(preprocess(contentFile, files[preprocessFilename], filesInDirectory, files));
     });
 
     // why doesn't then just accept done as an argument?
