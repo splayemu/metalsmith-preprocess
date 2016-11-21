@@ -1,11 +1,15 @@
 {
   "name": "metalsmith-preprocess",
-  "version": "0.0.0",
-  "description": "Preprocesses serverside JS",
+  "version": "0.1.0",
+  "description": "Metalsmith plugin that runs JS on the server to update html and other files",
   "main": "index.js",
   "scripts": {
     "test": "mocha -R spec",
     "debug-test": "DEBUG=metalsmith-preprocess mocha -R spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/splayemu/metalsmith-preprocess.git"
   },
   "author": "Spencer Apple",
   "license": "MIT",
