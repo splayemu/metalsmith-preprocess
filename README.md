@@ -5,7 +5,7 @@ Metalsmith plugin that runs JS on the server to update html and other files
 
 ## Installation
 
-npm install metalsmith-preprocess --save
+  npm install metalsmith-preprocess --save
 
 Requires metalsmith-collections to already have run to select html files to modify. 
 Node modules that are used for preprocessing need to be installed in your metalsmith environment.
@@ -13,18 +13,18 @@ Node modules that are used for preprocessing need to be installed in your metals
 ## Usage
 
 Relies on a directory structure similar to this:
-.
-├── build.js
-├── package.json
-├── Readme.md
-└── src
-    ├── index.html
-    ├── post1
-    │   ├── index.html
-    │   └── preprocess.js
-    └── post2
-        ├── index.html
-        └── preprocess.js
+  .
+  ├── build.js
+  ├── package.json
+  ├── Readme.md
+  └── src
+      ├── index.html
+      ├── post1
+      │   ├── index.html
+      │   └── preprocess.js
+      └── post2
+          ├── index.html
+          └── preprocess.js
 
 ### Create preprocess.js files in each directory with html files you want to modify
 
