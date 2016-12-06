@@ -26,7 +26,7 @@ Relies on a directory structure similar to this:
           ├── index.html
           └── preprocess.js
 
-### Create preprocess.js files in each directory with html files you want to modify
+### 1. Create preprocess.js files in each directory with html files you want to modify
 
 Each preprocess.js exports functions of two types:
 
@@ -49,7 +49,7 @@ module.exports.test = function (query_selector) {
 }
 ```
 
-###  Sample metalsmith build.js
+### 2. Require metalsmith-preprocess and invoke it in the metalsmith pipeline
 
 ```javascript
 var Metalsmith = require('metalsmith');
@@ -74,7 +74,7 @@ Metalsmith()
 
 npm test
 
-## Posible Uses
+## Possible Uses
 
 * Prerender D3 visualizations and serve the static svg images
 * Read, munge, and compress data files
@@ -85,6 +85,7 @@ npm test
   * context is set as window
   * query_selector is bound with window.document
   * To select with D3, first select on the document: d3.select(this.document). See [issue](https://github.com/d3/d3-request/issues/10).
+  * Cannot render certain functions such as getBBox because it uses jsdom
 
 ## Release History
 

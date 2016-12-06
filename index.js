@@ -12,14 +12,14 @@ module.exports = function (options) {
 
   options = options || {};
   Object.keys(defaults).forEach(function (defaultOption) {
-    if (!options.hasOwnProperty(defaultOption)) return;
-
-    options[defaultOption] = defaults[defaultOption];
+    if (!options.hasOwnProperty(defaultOption))
+      options[defaultOption] = defaults[defaultOption];
   });
 
   function preprocess (htmlFile, preprocess, filesInDirectory, files) {
-    debug('runPreprocess', htmlFile.directory);
-    preprocess = requireFromString(preprocess.contents.toString());
+    debug('runPreprocess', htmlFile.directory, preprocess);
+    preprocess = requireFromString(preprocess.contents.toString(),
+                                   path.join('src', preprocess.directory, preprocess.filename));
 
     // split renders and asyncLoad
     var loaded = preprocess.hasOwnProperty(defaults.asyncLoad) ?
