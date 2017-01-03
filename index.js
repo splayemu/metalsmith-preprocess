@@ -1,17 +1,17 @@
-var jsdom = require('jsdom');
-var requireFromString = require('require-from-string');
-var path = require('path');
-var debug = require('debug')('metalsmith-preprocess');
+const jsdom = require('jsdom');
+const requireFromString = require('require-from-string');
+const path = require('path');
+const debug = require('debug')('metalsmith-preprocess');
 
 module.exports = function (options) {
-  var defaults = {
-    filename: 'preprocess.js', // contains js code to run on server
+  const defaults = {
+    preprocess: 'preprocess.js', // contains js code to run on server
     collection: 'content',
     asyncLoad: 'asyncLoad',
   }
 
   options = options || {};
-  Object.keys(defaults).forEach(function (defaultOption) {
+  Object.keys(defaults).forEach((defaultOption) => {
     if (!options.hasOwnProperty(defaultOption))
       options[defaultOption] = defaults[defaultOption];
   });
@@ -22,25 +22,24 @@ module.exports = function (options) {
                                    path.join('src', preprocess.directory, preprocess.filename));
 
     // split renders and asyncLoad
-    var loaded = preprocess.hasOwnProperty(defaults.asyncLoad) ?
-                 preprocess[defaults.asyncLoad](htmlFile, filesInDirectory, files) :
+    var loaded = preprocess.hasOwnProperty(options.asyncLoad) ?
+                 preprocess[options.asyncLoad](htmlFile, filesInDirectory, files) :
                  Promise.resolve();
 
-    return loaded.then(function (result) {
+    return loaded.then((result) => {
       debug('then', htmlFile.directory);
-      return new Promise(function (resolve, reject) {
+      return new Promise((resolve, reject) => {
         jsdom.env({
           features: { QuerySelector: true },
           html: htmlFile.contents.toString(),
-          done: function (errors, window) {
+          done: (errors, window) => {
             if (errors)
               reject(errors);
 
-            //
             Object.keys(preprocess)
-              .filter(function (key) { return key !== defaults.asyncLoad; })
-              .forEach(function (key) {
-                var renderer = preprocess[key];
+              .filter((key) => { return key !== options.asyncLoad; })
+              .forEach((key) => {
+                const renderer = preprocess[key];
                 renderer.call(window, window.document.querySelector.bind(window.document));
               });
 
@@ -53,15 +52,15 @@ module.exports = function (options) {
     });
   }
 
-  return function (files, metalsmith, done) {
-    var promises = [];
-    var re_filename = /^(\S+)\/(\S+)$/;
+  return (files, metalsmith, done) => {
+    const promises = [];
+    const re_filename = /^(\S+)\/(\S+)$/;
 
     debug('metalsmith-preprocess', Object.keys(files).length);
 
     // update or add directory and filename for each file
-    Object.keys(files).forEach(function (file) {
-      var match = re_filename.exec(file);
+    Object.keys(files).forEach((file) => {
+      const match = re_filename.exec(file);
       if (match === null) {
         files[file].directory = "";
         files[file].filename = file;
@@ -72,31 +71,33 @@ module.exports = function (options) {
       files[file].filename = match[2];
     });
 
-    var contentFilenames = Object.keys(files)
+    const contentFilenames = Object.keys(files)
       // filter filepath list to content files only
-      .filter(function (file) {
-        return new Set(files[file].collection).has(defaults.collection);
+      .filter((file) => {
+        return new Set(files[file].collection).has(options.collection);
       });
 
+    const collections = metalsmith.metadata().collections;
+
     // test for collection
-    if (defaults.collection !== null && contentFilenames.length === 0) {
+    if (collections === undefined || !collections.hasOwnProperty(options.collection)) {
       done(Error("Collection, " +
-                 defaults.collection +
-                 ", is specified but does not match any files."));
+                 options.collection +
+                 ", Not Found. Check your metalsmith build."));
     }
 
     // create a map of content filenames to other filenames in the same directory
-    var contentDirectories = new Map(
-      contentFilenames.map(function (file) {
-        var filesInDirectory =
-          new Set(Object.keys(files).filter(function (f) { return file.directory === f.directory; }));
+    const contentDirectories = new Map(
+      contentFilenames.map((file) => {
+        const filesInDirectory =
+          new Set(Object.keys(files).filter((f) => { return file.directory === f.directory; }));
         return [file, filesInDirectory];
       }));
 
     // run preprocess functions for preprocess files found in content directories
-    contentDirectories.forEach(function (filesInDirectory, file) {
-      var contentFile = files[file],
-          preprocessFilename = path.join(contentFile.directory, defaults.filename);
+    contentDirectories.forEach((filesInDirectory, file) => {
+      const contentFile = files[file];
+      const preprocessFilename = path.join(contentFile.directory, options.preprocess);
 
       if (!filesInDirectory.has(preprocessFilename)) return;
 
@@ -107,7 +108,7 @@ module.exports = function (options) {
     // why doesn't then just accept done as an argument?
     debug('Checking promises:', promises);
     Promise.all(promises)
-      .then(function (result) { done(); })
-      .catch(function (error) { done(error); });
+      .then((result) => { done(); })
+      .catch((error) => { done(error); });
   }
 }

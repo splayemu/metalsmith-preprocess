@@ -7,10 +7,58 @@ Metalsmith plugin that runs JS on the server to update html and other files
 
   npm install metalsmith-preprocess --save
 
-Requires metalsmith-collections to already have run to select html files to modify. 
+Requires [metalsmith-collections](https://github.com/segmentio/metalsmith-collections) to already have run to select html files to modify. 
 Node modules that are used for preprocessing need to be installed in your metalsmith environment.
 
 ## Usage
+### 1. Require metalsmith-preprocess and invoke it in the metalsmith pipeline
+
+```javascript
+var Metalsmith = require('metalsmith');
+var collections = require('metalsmith-collections');
+var preprocess = require('metalsmith-preprocess');
+
+Metalsmith()
+  .use(collections({
+    content: {
+      pattern: './**/*.html',
+    }
+  }))
+  .use(preprocess())
+  .build(function (err, files){
+    if (err) throw err;
+    console.log('Success!');
+  });
+});
+```
+
+#### Options
+Pass options via an object when calling preprocess. Available options:
+* collection - change the name of collection, see [metalsmith-collections](https://github.com/segmentio/metalsmith-collections), that preprocess looks for as content files
+* asyncLoad - change the name of the asynchronous loading function called in each preprocess file
+* preprocess - change the name of the preprocess file to search for
+
+```javascript
+// example with options
+Metalsmith()
+  .use(collections({
+    nameOfCollection: {
+      pattern: './**/*.html',
+    }
+  }))
+  .use(preprocess({
+     collection: 'nameOfCollection',
+     preprocess: 'myPreprocessFile.js',
+     asyncLoad: 'myAsyncLoadFunctionName',
+  }))
+  .build(function (err, files){
+    if (err) throw err;
+    console.log('Success!');
+  });
+});
+```
+
+### 1. Create preprocess.js files in each directory with html files you want to modify
 
 Relies on a directory structure similar to this:
   .
@@ -25,8 +73,6 @@ Relies on a directory structure similar to this:
       └── post2
           ├── index.html
           └── preprocess.js
-
-### 1. Create preprocess.js files in each directory with html files you want to modify
 
 Each preprocess.js exports functions of two types:
 
@@ -49,27 +95,6 @@ module.exports.test = function (query_selector) {
 }
 ```
 
-### 2. Require metalsmith-preprocess and invoke it in the metalsmith pipeline
-
-```javascript
-var Metalsmith = require('metalsmith');
-var collections = require('metalsmith-collections');
-var preprocess = require('metalsmith-preprocess');
-
-Metalsmith()
-  .use(collections({
-    content: {
-      pattern: './**/*.html',
-    }
-  }))
-  .use(preprocess())
-  .build(function (err, files){
-    if (err) throw err;
-    console.log('Success!');
-  });
-});
-```
-
 ## Tests
 
 npm test
@@ -78,6 +103,9 @@ npm test
 
 * Prerender D3 visualizations and serve the static svg images
 * Read, munge, and compress data files
+
+## Examples
+See [tests](./test)
 
 ## Notes
 
@@ -90,3 +118,4 @@ npm test
 ## Release History
 
 * 0.1.0 Initial release
+* 0.1.1 Update documentation, Add unit tests, Fix options
