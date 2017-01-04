@@ -58,7 +58,7 @@ Metalsmith()
 });
 ```
 
-### 1. Create preprocess.js files in each directory with html files you want to modify
+### 2. Create preprocess.js files in each directory with html files you want to modify
 
 Relies on a directory structure similar to this:
 ```
@@ -76,7 +76,7 @@ Relies on a directory structure similar to this:
         └── preprocess.js
 ```
 
-Each preprocess.js exports functions of two types:
+Write each preprocess.js file to export functions of either type:
 
 ```javascript
 // function asyncLoad is the default function name, but can be changed with options.
@@ -96,6 +96,8 @@ module.exports.test = function (query_selector) {
   el.innerHTML = 'rendered';
 }
 ```
+
+And you should be set! Check your build directory to see the updated html.
 
 ## Tests
 
